@@ -1,1 +1,1 @@
-obj-m += hello/lkmhello.o
+obj-y += hello/lkmhello.o
