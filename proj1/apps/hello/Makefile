@@ -1,7 +1,7 @@
 CC=gcc
 all:
-	$(CROSS_COMPILE)$(CC) -o usrhello usrhello.c
+	$(CROSS_COMPILE)$(CC) -o usrhello.o usrhello.c
 clean:
-	rm usrhello
-run: usrhello
-	./usrhello
+	rm usrhello.o
+run: usrhello.o
+	./usrhello.o
