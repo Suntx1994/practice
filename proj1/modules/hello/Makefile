@@ -1,7 +1,6 @@
-CC=gcc
+obj-m += lkmhello.o
 all:
-	$(CROSS_COMPILE)$(CC) -o lkmhello lkmhello.c
-	make -C ../../.. M=$(PWD) module
+	make -C ../../.. M=$(PWD) modules
 
 clean:
 	make -C ../../.. M=$(PWD) clean
