@@ -1,2 +1,3 @@
 obj-m += ../modules/hello/lkmhello.o
+obj-m += ../modules/mod_calc/mod_calc.o
 obj-y += sys_calc.o
