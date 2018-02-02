@@ -1,5 +1,4 @@
-#include <linux/kernel.h>
-#include <linux/unistd.h>
+#include "sys_calc.h"
 
 asmlinkage long sys_calc(int param1, int param2, char operation, int* result) {
     switch (operation) {
