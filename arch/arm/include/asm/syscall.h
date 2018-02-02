@@ -17,7 +17,6 @@
 #define NR_syscalls (__NR_syscalls)
 
 extern const unsigned long sys_call_table[];
-EXPORT_SYMBOL(sys_call_table);
 
 static inline int syscall_get_nr(struct task_struct *task,
 				 struct pt_regs *regs)
