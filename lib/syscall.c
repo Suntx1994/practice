@@ -3,6 +3,9 @@
 #include <linux/export.h>
 #include <asm/syscall.h>
 
+extern const unsigned long sys_call_table[];
+EXPORT_SYMBOL(sys_call_table);
+
 static int collect_syscall(struct task_struct *target, long *callno,
 			   unsigned long args[6], unsigned int maxargs,
 			   unsigned long *sp, unsigned long *pc)
