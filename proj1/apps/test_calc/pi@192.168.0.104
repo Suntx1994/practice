@@ -1,9 +1,0 @@
-#include <stdio.c>
-#define sys_call() {__asm__ __volatile__ ("swi 0x900000+397\n\t");} while(0)
-
-int main(void) {
-    sys_call();
-    printf("woooow\n");
-    
-    return 0;
-}
