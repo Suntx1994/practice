@@ -1606,6 +1606,7 @@ struct task_struct {
 	pid_t pid;
 	pid_t tgid;
     /* Resource reservation */
+    bool is_rsv_valid;
     struct timespec *C;
     struct timespec *T;
 
