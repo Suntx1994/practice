@@ -5,6 +5,7 @@
 #include <linux/fs.h>
 #include <linux/uaccess.h>
 #include <linux/sched.h>
+#include<linux/slab.h>
 
 #define  DEVICE_NAME "rsvdev"
 #define  CLASS_NAME  "rsv"
@@ -12,7 +13,7 @@
 MODULE_LICENSE("GPL");
 
 static int    major_number;
-static char   message[BUFFER_LENGTH];
+static char   *message;
 static bool   is_module_available;
 static struct class*  rsvdev_class  = NULL;
 static struct device* rsvdev_devise = NULL;
@@ -80,18 +81,30 @@ static int dev_open(struct inode *inodep, struct file *filep){
 
 static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
    struct task_struct *task;
-   int error_count = 0;
+   unsigned long error_count = 0;
+   int buf_length = BUFFER_LENGTH;
+   message = kmalloc(buf_length, GFP_KERNEL);
    for_each_process(task) {
-      sprintf(message, "%d\t%d\t%d\t%s", (int)task->pid, (int)task->tgid, task->rt_priority, task->comm);
-      printk(message);
-      error_count += copy_to_user(buffer, message, strlen(message));
+      printk("%d\t%d\t%d\t%s", (int)task->pid, (int)task->tgid, task->rt_priority, task->comm);
+      if(snprintf(message, BUFFER_LENGTH, "%s\n%d\t%d\t%d\t%s", message, (int)task->pid, (int)task->tgid, task->rt_priority, task->comm) >= buf_length) {
+         // printk(KERN_ALERT "HI, %d", buf_length);
+         char *temp = kmalloc(buf_length, GFP_KERNEL);
+         strncpy(temp, message, buf_length);
+         buf_length *= 2;
+         kfree(message);
+         message = kmalloc(buf_length, GFP_KERNEL);
+         strncpy(message, temp, buf_length);
+         kfree(temp);
+      }
    }
+   pr_info("%d\n%s", strlen(message), message);
+   error_count = copy_to_user(buffer, message, strlen(message));
    if (error_count == 0){
       printk(KERN_INFO "rsvdev: Sent info correctly\n");
       return 0;
    }
    else {
-      printk(KERN_INFO "rsvdev: Failed to send %d characters to the user\n", error_count);
+      printk(KERN_INFO "rsvdev: Failed to send %lu characters to the user\n", error_count);
       return -EFAULT;
    }
 }
