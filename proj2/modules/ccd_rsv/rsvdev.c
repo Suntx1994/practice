@@ -87,7 +87,6 @@ static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *of
    for_each_process(task) {
       printk("%d\t%d\t%d\t%s", (int)task->pid, (int)task->tgid, task->rt_priority, task->comm);
       if(snprintf(message, BUFFER_LENGTH, "%s\n%d\t%d\t%d\t%s", message, (int)task->pid, (int)task->tgid, task->rt_priority, task->comm) >= buf_length) {
-         // printk(KERN_ALERT "HI, %d", buf_length);
          char *temp = kmalloc(buf_length, GFP_KERNEL);
          strncpy(temp, message, buf_length);
          buf_length *= 2;
