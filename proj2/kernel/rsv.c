@@ -8,10 +8,10 @@ asmlinkage long set_rsv(pid_t pid, struct timespec *C, struct timespec *T) {
         cur_task->C = C;
         cur_task->T = T;
         cur_task->is_rsv_valid = true;
-        pr_info("rsv succeeded for process %d", (int)pid);
+        pr_info("rsv succeeded for p: %d", (int)pid);
     }
     else {
-        pr_info("resource for process %d has been reserved before", (int)pid);
+        pr_info("resource for p: %d has been reserved before", (int)pid);
         return -1;
     }
     return 0;
@@ -26,7 +26,7 @@ asmlinkage long cancel_rsv(pid_t pid) {
         pr_info("rsv for p: %d has been canceled", (int)pid);
     }
     else {
-        pr_info("Invalid instruction");
+        pr_info("There's no reservation for p: %d", (int)pid);
         return -1;
     }
     return 0;
