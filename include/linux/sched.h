@@ -1609,6 +1609,9 @@ struct task_struct {
     bool is_rsv_valid;
     struct timespec *C;
     struct timespec *T;
+    ktime_t rsv_ktime;
+    struct hrtimer rsv_hr_timer;
+
 
 #ifdef CONFIG_CC_STACKPROTECTOR
 	/* Canary value for the -fstack-protector gcc feature */
