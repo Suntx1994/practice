@@ -104,6 +104,7 @@ struct hrtimer {
 	struct hrtimer_clock_base	*base;
 	u8				state;
 	u8				is_rel;
+	struct timespec T;			/* For EE255 */
 #ifdef CONFIG_TIMER_STATS
 	int				start_pid;
 	void				*start_site;
