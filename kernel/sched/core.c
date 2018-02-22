@@ -3337,7 +3337,7 @@ static void __sched notrace __schedule(bool preempt)
 	struct pin_cookie cookie;
 	struct rq *rq;
 	int cpu;
-
+	ktime_t this_execution_time;
 	cpu = smp_processor_id();
 	rq = cpu_rq(cpu);
 	prev = rq->curr;
@@ -3399,6 +3399,15 @@ static void __sched notrace __schedule(bool preempt)
 		++*switch_count;
 
 		trace_sched_switch(preempt, prev, next);
+		/* For EE255 */
+		if (prev->is_rsv_valid /*&& ktime_compare(prev->start_time, ktime_set(0, 0)) > 0*/) {
+			this_execution_time = ktime_sub(ktime_get(), prev->previous_start_time);
+			prev->total_execution_time = ktime_add(this_execution_time, prev->total_execution_time);
+		}
+		if (next->is_rsv_valid) {
+			next->previous_start_time = ktime_get();
+		}
+
 		rq = context_switch(rq, prev, next, cookie); /* unlocks the rq */
 	} else {
 		lockdep_unpin_lock(&rq->lock, cookie);

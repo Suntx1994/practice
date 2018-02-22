@@ -1609,7 +1609,7 @@ struct task_struct {
     bool is_rsv_valid;
     struct timespec C;
     struct timespec T;
-    ktime_t rsv_ktime;
+    ktime_t total_execution_time, previous_start_time;
     struct hrtimer rsv_hr_timer;
 
 

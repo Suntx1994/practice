@@ -11,6 +11,15 @@ enum hrtimer_restart timer_callback(struct hrtimer *timer_for_restart) {
     currtime = ktime_get();
     interval = timespec_to_ktime(timer_for_restart->T);
     hrtimer_forward(timer_for_restart, currtime, interval);
+    if (ktime_compare(cur_task->total_execution_time, timespec_to_ktime(cur_task->C)) > 0) {
+        s64 total_ms, budget_ms;
+        int util;
+        total_ms = ktime_to_ms(cur_task->total_execution_time);
+        budget_ms = ktime_to_ms(timespec_to_ktime(cur_task->C));
+        util = ((int)total_ms / (int)budget_ms) * 100;
+        printk("Task %d: budget overrun (util: %d %%)", (int)cur_task->pid, util);     
+    }
+    cur_task->total_execution_time = ktime_set(0, 0);
     return HRTIMER_RESTART;
 }
 
@@ -24,7 +33,7 @@ asmlinkage long set_rsv(pid_t pid, struct timespec *C, struct timespec *T) {
         cur_task->rsv_hr_timer.function = &timer_callback;
         cur_task->rsv_hr_timer.T = *T;
         hrtimer_start(&cur_task->rsv_hr_timer, interval, HRTIMER_MODE_PINNED);
-        pr_info("rsv succeeded for p: %d, %lu", (int)pid, cur_task->T.tv_nsec);
+        pr_info("rsv succeeded for p: %d", (int)pid);
     }
     else {
         pr_info("resource for p: %d has been reserved before", (int)pid);
@@ -42,10 +51,10 @@ asmlinkage long cancel_rsv(pid_t pid) {
         cur_task->is_rsv_valid = false;
         ret = hrtimer_cancel(&cur_task->rsv_hr_timer);
         if (ret) { 
-            printk("The timer was still in use...\n");
+            printk("rsv for p: %d has been canceled (was active)\n", (int)pid);
         }
         else {
-            pr_info("rsv for p: %d has been canceled", (int)pid);
+            printk("rsv for p: %d has been canceled", (int)pid);
         }
     }
     else {
