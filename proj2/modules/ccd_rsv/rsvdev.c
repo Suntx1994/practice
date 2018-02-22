@@ -9,11 +9,12 @@
 
 #define  DEVICE_NAME "rsvdev"
 #define  CLASS_NAME  "rsv"
-#define  BUFFER_LENGTH 4096
+#define  MESSAGE_LENGTH 1024
 MODULE_LICENSE("GPL");
 
 static int    major_number;
-static char   *message;
+char   message[MESSAGE_LENGTH];
+char   *message_ptr;
 static bool   is_module_available;
 static struct class*  rsvdev_class  = NULL;
 static struct device* rsvdev_devise = NULL;
@@ -35,7 +36,7 @@ static int __init rsvdev_init(void){
    printk(KERN_INFO "rsvdev: Initializing the rsvdev LKM\n");
 
    major_number = register_chrdev(0, DEVICE_NAME, &fops);
-   if (major_number<0){
+   if (major_number < 0){
       printk(KERN_ALERT "rsvdev failed to register a major number\n");
       return major_number;
    }
@@ -49,6 +50,7 @@ static int __init rsvdev_init(void){
    }
    printk(KERN_INFO "rsvdev: device class registered correctly\n");
    is_module_available = true;
+   memset(message, 0, sizeof(message[0]));
    rsvdev_devise = device_create(rsvdev_class, NULL, MKDEV(major_number, 0), NULL, DEVICE_NAME);
    if (IS_ERR(rsvdev_devise)){
       class_destroy(rsvdev_class);
@@ -68,10 +70,25 @@ static void __exit rsvdev_exit(void){
    printk(KERN_INFO "rsvdev: Goodbye from the LKM!\n");
 }
 
+static void list_rsv_active_task(struct task_struct *task) {
+   struct list_head *list;
+   struct task_struct *child;
+   list_for_each(list, &task->children) {
+      child = list_entry(list, struct task_struct, sibling);
+      if (child && child->is_rsv_valid) {
+         sprintf(message, "%s%d\t%d\t%d\t%s\n", message, child->pid, child->tgid, child->rt_priority, child->comm);
+      }
+      list_rsv_active_task(child);
+   }
+}
+
 static int dev_open(struct inode *inodep, struct file *filep){
    if (is_module_available) {
       printk(KERN_INFO "rsvdev: Device has been opened");
       is_module_available = false;
+      sprintf(message, "pid\ttgid\tprio\tname\n");
+      list_rsv_active_task(&init_task);
+      message_ptr = message;
       return 0;
    }
    else {
@@ -80,32 +97,14 @@ static int dev_open(struct inode *inodep, struct file *filep){
 }
 
 static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
-   struct task_struct *task;
-   unsigned long error_count = 0;
-   int buf_length = BUFFER_LENGTH;
-   message = kmalloc(buf_length, GFP_KERNEL);
-   for_each_process(task) {
-      printk("%d\t%d\t%d\t%s", (int)task->pid, (int)task->tgid, task->rt_priority, task->comm);
-      if(snprintf(message, BUFFER_LENGTH, "%s\n%d\t%d\t%d\t%s", message, (int)task->pid, (int)task->tgid, task->rt_priority, task->comm) >= buf_length) {
-         char *temp = kmalloc(buf_length, GFP_KERNEL);
-         strncpy(temp, message, buf_length);
-         buf_length *= 2;
-         kfree(message);
-         message = kmalloc(buf_length, GFP_KERNEL);
-         strncpy(message, temp, buf_length);
-         kfree(temp);
-      }
+   int count = 0;
+   if (*message_ptr == 0) return 0;
+   while (len && *message_ptr) {
+      put_user(*(message_ptr++), buffer++);
+      len--;
+      count++;
    }
-   pr_info("%d\n%s", strlen(message), message);
-   error_count = copy_to_user(buffer, message, strlen(message));
-   if (error_count == 0){
-      printk(KERN_INFO "rsvdev: Sent info correctly\n");
-      return 0;
-   }
-   else {
-      printk(KERN_INFO "rsvdev: Failed to send %lu characters to the user\n", error_count);
-      return -EFAULT;
-   }
+   return count;
 }
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){

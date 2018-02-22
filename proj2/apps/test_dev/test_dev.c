@@ -5,7 +5,7 @@
 #include<string.h>
 #include<unistd.h>
 
-#define BUFFER_LENGTH 256 
+#define BUFFER_LENGTH 4096 
 static char receive[BUFFER_LENGTH];
 
 int main(){
