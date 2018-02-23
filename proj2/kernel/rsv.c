@@ -16,7 +16,7 @@ enum hrtimer_restart timer_callback(struct hrtimer *timer_for_restart) {
         int util;
         total_ms = ktime_to_ms(cur_task->total_execution_time);
         budget_ms = ktime_to_ms(timespec_to_ktime(cur_task->C));
-        util = ((int)total_ms / (int)budget_ms) * 100;
+        util = (int)total_ms * 100 / (int)budget_ms;
         printk("Task %d: budget overrun (util: %d %%)", (int)cur_task->pid, util);     
     }
     cur_task->total_execution_time = ktime_set(0, 0);
