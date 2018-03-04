@@ -6,3 +6,4 @@
 #include <linux/mm.h>
 
 asmlinkage int show_vm_areas(int pid);
+unsigned long vpage_to_ppage(struct mm_struct *mm, unsigned long virt);
