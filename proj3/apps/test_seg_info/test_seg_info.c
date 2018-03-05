@@ -4,7 +4,7 @@
 
 #define show_segment_info 400
 #define show_vm_areas 401
-#define BUFFER_SIZE 135168
+#define BUFFER_SIZE 100000000
 
 int main(int argc, char* argv[]) {
     int res;
@@ -25,7 +25,6 @@ int main(int argc, char* argv[]) {
     }
     for (i = 0; i < n; i += 4096) {
         buf[i] = 1;
-        buf2[i] = 1;
     }
     // res = syscall(show_segment_info, pid);
     res = syscall(show_vm_areas, pid);

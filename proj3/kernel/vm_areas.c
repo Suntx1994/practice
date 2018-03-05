@@ -26,7 +26,7 @@ unsigned long vpage_to_ppage(struct mm_struct *mm, unsigned long address) {
 }
 
 asmlinkage int show_vm_areas(int pid) {
-    unsigned long vms, vme, dif, vpage, phy_page;
+    unsigned long vms, vme, dif, vpage, phy_addr;
     int num_phy_pages;
     char vmf[BUFFER_SIZE];
     struct task_struct *this_task;
@@ -39,6 +39,7 @@ asmlinkage int show_vm_areas(int pid) {
             printk(KERN_INFO "[Memory-mapped areas of process %d]", pid);
             this_vm = this_mm->mmap;
             while (this_vm) {
+                // int ret = -EINVAL;
                 vms = this_vm->vm_start;
                 vme = this_vm->vm_end;
                 dif = vme - vms;
@@ -48,8 +49,10 @@ asmlinkage int show_vm_areas(int pid) {
                     sprintf(vmf, ",");
                 num_phy_pages = 0;
                 for (vpage = vms; vpage < vme; vpage += PAGE_SIZE) {
-                    phy_page = vpage_to_ppage(this_mm, vpage);
-                    if (phy_page != -1) {
+                    phy_addr = vpage_to_ppage(this_vm->vm_mm, vpage);
+                    // ret = follow_pfn(this_vm, vpage, &phy_addr);
+                    // if (ret == 0) {
+                    if (phy_addr != -1) {
                         num_phy_pages++;
                     }
                 }
