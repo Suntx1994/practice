@@ -1569,4 +1569,3 @@ kernel/lib/ts_kmp.ko:
 kernel/lib/ts_bm.ko:
 kernel/lib/ts_fsm.ko:
 kernel/lib/lru_cache.ko:
-kernel/proj2/modules/ccd_rsv/rsvdev.ko:

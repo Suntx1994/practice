@@ -5,6 +5,6 @@
 #include <linux/hrtimer.h>
 #include <linux/ktime.h>
 
-asmlinkage long set_rsv(pid_t pid, struct timespec *C, struct timespec *T);
+asmlinkage long set_rsv(pid_t pid, struct timespec *C, struct timespec *T, int cpuid);
 asmlinkage long cancel_rsv(pid_t pid);
 asmlinkage long wait_until_next_period(void);

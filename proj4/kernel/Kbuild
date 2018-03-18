@@ -1,2 +1,1 @@
-obj-m += ../modules/ccd_rsv/rsvdev.o
 obj-y += rsv.o
